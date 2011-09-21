@@ -85,7 +85,8 @@ static QRgb doMedian(const QImage &img, int size, int x, int y)
 {
   int fsize = size*size;
   int hsize = (size-1)/2;
-  uchar vs[fsize];
+  Q_ASSERT(fsize <= 256);
+  uchar vs[256];
 
   // Red
   QRgb res = qRgb(0, 0, 0);

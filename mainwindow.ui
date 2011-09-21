@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>570</width>
-    <height>464</height>
+    <height>468</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,7 +41,7 @@
    </attribute>
    <widget class="QWidget" name="dockToolsContents">
     <property name="sizePolicy">
-     <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+     <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
       <horstretch>0</horstretch>
       <verstretch>0</verstretch>
      </sizepolicy>
@@ -141,7 +141,7 @@
   </widget>
   <widget class="QDockWidget" name="dockInfo">
    <property name="sizePolicy">
-    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
      <horstretch>0</horstretch>
      <verstretch>0</verstretch>
     </sizepolicy>
