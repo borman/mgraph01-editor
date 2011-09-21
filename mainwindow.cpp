@@ -4,6 +4,8 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "filters.h"
+#include "filterwrapper.h"
 
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
@@ -43,11 +45,13 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->graphicsView->scene()->setBackgroundBrush(Qt::black);
   connect(this, SIGNAL(imageUpdated()), SLOT(updateView()));
 
-  // Transform controls
-  ui->wRotateAngle->hide();
-  ui->wScaleFactor->hide();
-  connect(ui->btnRotate, SIGNAL(toggled(bool)), SLOT(setRotateMode(bool)));
-  connect(ui->btnScale, SIGNAL(toggled(bool)), SLOT(setScaleMode(bool)));
+  // Filters
+  QList<IFilter *> filters = createFilters(this);
+  foreach(IFilter *filter, filters)
+  {
+    FilterWrapper *wrapper = new FilterWrapper(filter, this);
+    ui->filtersLayout->addWidget(wrapper->createWidget(ui->filtersBox));
+  }
 }
 
 MainWindow::~MainWindow()
@@ -87,39 +91,4 @@ void MainWindow::updateView()
 {
   imageView->setPixmap(QPixmap::fromImage(currentImage));
   ui->graphicsView->scene()->setSceneRect(imageView->boundingRect()); // Force shrink
-}
-
-void MainWindow::setRotateMode(bool enabled)
-{
-  if (enabled)
-  {
-    ui->btnScale->setChecked(false);
-    ui->filtersBox->setEnabled(false);
-    ui->regionBox->setEnabled(false);
-    ui->wRotateAngle->show();
-  }
-  else
-  {
-    ui->filtersBox->setEnabled(true);
-    ui->regionBox->setEnabled(true);
-    ui->wRotateAngle->hide();
-  }
-}
-
-void MainWindow::setScaleMode(bool enabled)
-{
-  if (enabled)
-  {
-    ui->btnRotate->setChecked(false);
-    ui->filtersBox->setEnabled(false);
-    ui->regionBox->setEnabled(false);
-    ui->wScaleFactor->show();
-  }
-  else
-  {
-    ui->filtersBox->setEnabled(true);
-    ui->regionBox->setEnabled(true);
-    ui->wScaleFactor->hide();
-  }
-
 }

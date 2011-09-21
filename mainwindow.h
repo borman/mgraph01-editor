@@ -23,8 +23,6 @@ public slots:
   bool loadFile(const QString &filename);
   void saveFile();
   void updateView();
-  void setRotateMode(bool enabled);
-  void setScaleMode(bool enabled);
 
 signals:
   void fileOperationsEnabled(bool);
