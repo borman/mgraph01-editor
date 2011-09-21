@@ -75,29 +75,6 @@ Matrix<double> unsharp(int size, double sigma, double alpha)
 
 // ==========
 
-/*
-static uchar kth_stat(uchar *vs, int k, int l, int r)
-{
-  uchar x = vs[(l+r)/2];
-  int i=l, j=r;
-  while (i<=j)
-  {
-    while (i<r && vs[i]<=x) i++;
-    while (j>0 && vs[j]>=x) j--;
-    if (i<=j)
-    {
-      qSwap(vs[i], vs[j]);
-      i++;
-      j--;
-    }
-  }
-  int left = i-l;
-  int right = r-j;
-  if (left < k)
-    return kth_stat(vs, k-left, i, r);
-}
-*/
-
 uchar findMedian(uchar *vs, int size)
 {
   qSort(vs, vs+size);
@@ -111,7 +88,7 @@ static QRgb doMedian(const QImage &img, int size, int x, int y)
   uchar vs[fsize];
 
   // Red
-  QRgb res = 0;
+  QRgb res = qRgb(0, 0, 0);
   QRgb mask = 0xff;
   int shift = 0;
   for (int i=0; i<3; i++)
