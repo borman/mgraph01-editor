@@ -6,6 +6,7 @@
 #include "ui_mainwindow.h"
 #include "filters.h"
 #include "filterwrapper.h"
+#include "filters/histogram.h"
 
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
@@ -89,6 +90,26 @@ void MainWindow::saveFile()
 
 void MainWindow::updateView()
 {
+  static const int histWidth = 128;
+  static const int histHeight = 64;
+
   imageView->setPixmap(QPixmap::fromImage(currentImage));
   ui->graphicsView->scene()->setSceneRect(imageView->boundingRect()); // Force shrink
+
+  ui->hstLuminance->
+      setPixmap(histogram(currentImage, getLuma,
+                          histWidth, histHeight,
+                          Qt::black, QColor(Qt::white)));
+  ui->hstRed->
+      setPixmap(histogram(currentImage, getRed,
+                          histWidth, histHeight,
+                          Qt::black, QColor(Qt::red)));
+  ui->hstGreen->
+      setPixmap(histogram(currentImage, getGreen,
+                          histWidth, histHeight,
+                          Qt::black, QColor(Qt::green)));
+  ui->hstBlue->
+      setPixmap(histogram(currentImage, getBlue,
+                          histWidth, histHeight,
+                          Qt::black, QColor(Qt::blue)));
 }

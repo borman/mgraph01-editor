@@ -17,7 +17,8 @@ SOURCES += main.cpp\
     filters/colorcorrect.cpp \
     filters/artistic.cpp \
     filters.cpp \
-    filterwrapper.cpp
+    filterwrapper.cpp \
+    filters/histogram.cpp
 
 HEADERS  += mainwindow.h \
     filters/transform.h \
@@ -27,9 +28,12 @@ HEADERS  += mainwindow.h \
     filters/artistic.h \
     ifilter.h \
     filters.h \
-    filterwrapper.h
+    filterwrapper.h \
+    filters/histogram.h
 
 FORMS    += mainwindow.ui
+
+
 
 
 
