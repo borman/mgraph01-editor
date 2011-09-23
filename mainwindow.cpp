@@ -2,6 +2,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include <QSignalMapper>
+#include <QTime>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -139,8 +140,13 @@ void MainWindow::filterApply()
 
   IFilter *ifilter = thisFilter->filter();
   ui->statusBar->showMessage(tr("Please wait: applying %1...").arg(ifilter->filterName()));
-  QCoreApplication::processEvents();
+  QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
+  QTime measure;
+  measure.start();
   ifilter->apply(currentImage);
+  int elapsed = measure.elapsed();
+
   emit imageUpdated();
-  ui->statusBar->showMessage(tr("%1 applied.").arg(ifilter->filterName()));
+  ui->statusBar->showMessage(tr("%1 applied (%2 ms).").arg(ifilter->filterName()).arg(elapsed));
 }

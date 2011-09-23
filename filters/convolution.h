@@ -12,6 +12,11 @@ class Matrix
     {
       memset(m_d, 0, size*size*sizeof(V));
     }
+    Matrix(const Matrix &other)
+      : m_size(other.m_size), m_d(new V[other.m_size*other.m_size])
+    {
+      memcpy(m_d, other.m_d, m_size*m_size*sizeof(V));
+    }
     ~Matrix()
     {
       delete[] m_d;
