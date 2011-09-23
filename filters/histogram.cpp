@@ -2,43 +2,72 @@
 #include <QPainter>
 #include "histogram.h"
 
-QPixmap histogram(const QImage &img, ColorProp prop, int w, int h,
-                  const QBrush &bg, const QPen &fg)
+QPixmap drawHistogram(const QImage &img, ColorProp prop, int w, int h,
+                      const QColor &bg, const QColor &fg)
 {
-  int *stats = new int[w];
-  for (int i=0; i<w; i++)
-    stats[i] = 0;
+  int qmin, qmax;
+  QVector<double> stats = makeHistogram(img, prop, w, &qmin, &qmax);
 
-  for (int y=0; y<img.height(); y++)
-    for (int x=0; x<img.width(); x++)
-    {
-      int pos = prop(img.pixel(x, y)) * (w-1);
-      stats[pos] += 1;
-    }
+  double smax = stats[0];
+  for (int i=1; i<w; i++)
+    smax = qMax(smax, stats[i]);
 
   QPixmap res(w, h);
   QPainter p;
   p.begin(&res);
-  p.setBrush(bg);
-  p.setPen(fg);
+
+  QColor highlight(fg.red(), fg.green(), fg.blue(), fg.alpha()*0.4);
+
   p.fillRect(res.rect(), bg);
+  p.fillRect(qmin, 0, qmax-qmin+1, h, highlight);
 
-  int smax = stats[0];
-  for (int i=1; i<w; i++)
-    smax = qMax(smax, stats[i]);
-  if (smax == 0)
-    smax = 100;
-
+  p.setPen(fg);
   for (int i=0; i<w; i++)
   {
-    double val = stats[i]/double(smax);
+    double val = stats[i]/smax;
     p.drawLine(i, h-1, i, h-1 - val*(h-2));
   }
 
   p.end();
-  delete[] stats;
 
   return res;
+}
+
+QVector<double> makeHistogram(const QImage &img, ColorProp prop, int w, int *qmin, int *qmax)
+{
+  static const double quantile = 0.01;
+
+  QVector<double> stats(w, 0);
+  for (int y=0; y<img.height(); y++)
+    for (int x=0; x<img.width(); x++)
+    {
+      int pos = qBound(0, int(prop(img.pixel(x, y)) * (w-1)), w-1);
+      stats[pos] += 1;
+    }
+
+  double k = 1.0/(img.width()*img.height());
+  for (int p=0; p<w; p++)
+    stats[p] *= k;
+
+  if (qmin)
+  {
+    int q = 0;
+    double s = 0;
+    while (s<quantile)
+      s += stats[q++];
+    *qmin = q;
+  }
+
+  if (qmax)
+  {
+    int q = w-1;
+    double s = 0;
+    while (s<quantile)
+      s += stats[q--];
+    *qmax = q;
+  }
+
+  return stats;
 }
 
 double getLuma(QRgb rgb)

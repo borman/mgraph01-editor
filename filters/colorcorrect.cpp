@@ -1,5 +1,6 @@
 #include "colorcorrect.h"
 #include "rgbv.h"
+#include "histogram.h"
 
 void whitebalance(QImage &img)
 {
@@ -26,23 +27,18 @@ void whitebalance(QImage &img)
 
 void luma_stretch(QImage &img)
 {
-  static const RGBV luma(0.2125, 0.7154, 0.0721); // BT.709
+  int qmin, qmax;
+  makeHistogram(img, getLuma, 256, &qmin, &qmax);
 
-  double ymin=1.0, ymax=0.0;
-  for (int y=0; y<img.height(); y++)
-    for (int x=0; x<img.width(); x++)
-    {
-      double yval = luma.dot(img.pixel(x, y));
-      ymin = qMin(ymin, yval);
-      ymax = qMax(ymax, yval);
-    }
+  double ymin = qmin/255.0;
+  double k = qmax==qmin? 1 : 255.0/(qmax-qmin);
 
   for (int y=0; y<img.height(); y++)
     for (int x=0; x<img.width(); x++)
     {
       RGBV c(img.pixel(x, y));
-      double yval = luma.dot(c); // Current luminance
-      double ytgt = (yval - ymin)/(ymax - ymin); // Target luminance
+      double yval = getLuma(img.pixel(x, y)); // Current luminance
+      double ytgt = (yval - ymin)*k; // Target luminance
       c.mul(ytgt/yval);
       c.clamp();
       img.setPixel(x, y, c.toQRgb());
@@ -51,22 +47,17 @@ void luma_stretch(QImage &img)
 
 void rgb_stretch(QImage &img)
 {
-  double rmin=1.0, rmax=0.0;
-  double gmin=1.0, gmax=0.0;
-  double bmin=1.0, bmax=0.0;
-  for (int y=0; y<img.height(); y++)
-    for (int x=0; x<img.width(); x++)
-    {
-      RGBV c(img.pixel(x, y));
-      rmin = qMin(rmin, c.r);
-      rmax = qMax(rmax, c.r);
-      gmin = qMin(gmin, c.g);
-      gmax = qMax(gmax, c.g);
-      bmin = qMin(bmin, c.b);
-      bmax = qMax(bmax, c.b);
-    }
-  RGBV lo(rmin, gmin, bmin);
-  RGBV stretch(1/(rmax-rmin), 1/(gmax-gmin), 1/(bmax-bmin));
+  int rmin, rmax;
+  int gmin, gmax;
+  int bmin, bmax;
+  makeHistogram(img, getRed,   256, &rmin, &rmax);
+  makeHistogram(img, getGreen, 256, &gmin, &gmax);
+  makeHistogram(img, getBlue,  256, &bmin, &bmax);
+
+  RGBV lo(rmin/255.0, gmin/255.0, bmin/255.0);
+  RGBV stretch(rmax==rmin? 1.0 : 255.0/(rmax-rmin),
+               gmax==gmin? 1.0 : 255.0/(gmax-gmin),
+               bmax==bmin? 1.0 : 255.0/(bmax-bmin));
   for (int y=0; y<img.height(); y++)
     for (int x=0; x<img.width(); x++)
     {

@@ -102,21 +102,21 @@ void MainWindow::updateView()
   ui->graphicsView->scene()->setSceneRect(imageView->boundingRect()); // Force shrink
 
   ui->hstLuminance->
-      setPixmap(histogram(currentImage, getLuma,
-                          histWidth, histHeight,
-                          Qt::black, QColor(Qt::white)));
+      setPixmap(drawHistogram(currentImage, getLuma,
+                              histWidth, histHeight,
+                              Qt::black, Qt::white));
   ui->hstRed->
-      setPixmap(histogram(currentImage, getRed,
-                          histWidth, histHeight,
-                          Qt::black, QColor(Qt::red)));
+      setPixmap(drawHistogram(currentImage, getRed,
+                              histWidth, histHeight,
+                              Qt::black, Qt::red));
   ui->hstGreen->
-      setPixmap(histogram(currentImage, getGreen,
-                          histWidth, histHeight,
-                          Qt::black, QColor(Qt::green)));
+      setPixmap(drawHistogram(currentImage, getGreen,
+                              histWidth, histHeight,
+                              Qt::black, Qt::green));
   ui->hstBlue->
-      setPixmap(histogram(currentImage, getBlue,
-                          histWidth, histHeight,
-                          Qt::black, QColor(Qt::blue)));
+      setPixmap(drawHistogram(currentImage, getBlue,
+                              histWidth, histHeight,
+                              Qt::black, Qt::blue));
 }
 
 void MainWindow::filterActivated()
