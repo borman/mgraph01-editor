@@ -137,7 +137,10 @@ void MainWindow::filterApply()
   if (!thisFilter)
     return;
 
-  thisFilter->filter()->apply(currentImage);
+  IFilter *ifilter = thisFilter->filter();
+  ui->statusBar->showMessage(tr("Please wait: applying %1...").arg(ifilter->filterName()));
+  QCoreApplication::processEvents();
+  ifilter->apply(currentImage);
   emit imageUpdated();
-  ui->statusBar->showMessage(tr("%1 applied.").arg(thisFilter->filter()->filterName()));
+  ui->statusBar->showMessage(tr("%1 applied.").arg(ifilter->filterName()));
 }

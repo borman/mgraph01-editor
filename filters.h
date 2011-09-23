@@ -109,7 +109,7 @@ class Rotate: public QObject, public IFilter
     virtual QString filterName() { return tr("Rotate"); }
     virtual void apply(QImage &image);
   private:
-    QSpinBox *sbAngle;
+    QDoubleSpinBox *sbAngle;
 };
 
 class Scale: public QObject, public IFilter

@@ -5,9 +5,13 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QHeaderView>
+#include <QLocale>
 
 #include "filters.h"
 #include "filters/colorcorrect.h"
+#include "filters/artistic.h"
+#include "filters/transform.h"
+#include "filters/convolution.h"
 
 QList<IFilter *> createFilters(QObject *parent)
 {
@@ -50,11 +54,16 @@ GaussianBlur::GaussianBlur(QObject *parent)
   settingsWidget()->setLayout(layout);
 
   sbRadius = new QDoubleSpinBox(settingsWidget());
+  sbRadius->setRange(0.01, 10);
+  sbRadius->setValue(1);
   layout->addRow(tr("Radius:"), sbRadius);
 }
 
 void GaussianBlur::apply(QImage &image)
 {
+  double sigma = sbRadius->value();
+  int size = 2*int(sigma*3) - 1;
+  convolve(image, gaussian(size, sigma));
 }
 
 
@@ -65,14 +74,21 @@ UnsharpMask::UnsharpMask(QObject *parent)
   settingsWidget()->setLayout(layout);
 
   sbRadius = new QDoubleSpinBox(settingsWidget());
+  sbRadius->setRange(0.01, 10);
+  sbRadius->setValue(1);
   layout->addRow(tr("Radius:"), sbRadius);
 
   sbStrength = new QDoubleSpinBox(settingsWidget());
+  sbStrength->setRange(0.01, 10);
+  sbStrength->setValue(0.5);
   layout->addRow(tr("Strength:"), sbStrength);
 }
 
 void UnsharpMask::apply(QImage &image)
 {
+  double sigma = sbRadius->value();
+  int size = 2*int(sigma*3) - 1;
+  convolve(image, unsharp(size, sigma, sbStrength->value()));
 }
 
 Median::Median(QObject *parent)
@@ -82,11 +98,14 @@ Median::Median(QObject *parent)
   settingsWidget()->setLayout(layout);
 
   sbSize = new QSpinBox(settingsWidget());
+  sbSize->setRange(3, 7);
+  sbSize->setValue(3);
   layout->addRow(tr("Filter size:"), sbSize);
 }
 
 void Median::apply(QImage &image)
 {
+  median(image, sbSize->value());
 }
 
 MatteGlass::MatteGlass(QObject *parent)
@@ -96,14 +115,19 @@ MatteGlass::MatteGlass(QObject *parent)
   settingsWidget()->setLayout(layout);
 
   sbRadius = new QDoubleSpinBox(settingsWidget());
+  sbRadius->setRange(0.1, 100);
+  sbRadius->setValue(10);
   layout->addRow(tr("Radius:"), sbRadius);
 
   sbSamples = new QSpinBox(settingsWidget());
+  sbSamples->setRange(1, 20);
+  sbSamples->setValue(5);
   layout->addRow(tr("Samples:"), sbSamples);
 }
 
 void MatteGlass::apply(QImage &image)
 {
+  glass(image, sbRadius->value(), sbSamples->value());
 }
 
 Rotate::Rotate(QObject *parent)
@@ -112,12 +136,15 @@ Rotate::Rotate(QObject *parent)
   QFormLayout *layout = new QFormLayout;
   settingsWidget()->setLayout(layout);
 
-  sbAngle = new QSpinBox(settingsWidget());
+  sbAngle = new QDoubleSpinBox(settingsWidget());
+  sbAngle->setRange(-180, 180);
+  sbAngle->setValue(0);
   layout->addRow(tr("Angle (degrees):"), sbAngle);
 }
 
 void Rotate::apply(QImage &image)
 {
+  image = rotate(image, sbAngle->value());
 }
 
 Scale::Scale(QObject *parent)
@@ -127,11 +154,14 @@ Scale::Scale(QObject *parent)
   settingsWidget()->setLayout(layout);
 
   sbFactor = new QDoubleSpinBox(settingsWidget());
+  sbFactor->setRange(0.1, 10);
+  sbFactor->setValue(1);
   layout->addRow(tr("Factor:"), sbFactor);
 }
 
 void Scale::apply(QImage &image)
 {
+  image = scale(image, sbFactor->value());
 }
 
 CustomConvolution::CustomConvolution(QObject *parent)
@@ -140,6 +170,8 @@ CustomConvolution::CustomConvolution(QObject *parent)
   const int maxSize = 7;
   const int minSize = 3;
   const int defaultSize = 3;
+
+  QLocale l = QLocale::system();
 
   QFormLayout *layout = new QFormLayout;
   layout->setRowWrapPolicy(QFormLayout::WrapAllRows);
@@ -159,7 +191,7 @@ CustomConvolution::CustomConvolution(QObject *parent)
   for (int y=0; y<maxSize; y++)
     for (int x=0; x<maxSize; x++)
     {
-      QLineEdit *le = new QLineEdit("0.0", settingsWidget());
+      QLineEdit *le = new QLineEdit(l.toString(0.0, 'f', 1), settingsWidget());
       le->setValidator(new QDoubleValidator(le));
       grid->addWidget(le, y, x);
     }
@@ -186,4 +218,18 @@ void CustomConvolution::updateMatrixSize(int newSize)
 
 void CustomConvolution::apply(QImage &image)
 {
+  int size = slSize->value();
+  QLocale l = QLocale::system();
+  Matrix<double> m(size);
+  for (int y=0; y<size; y++)
+    for (int x=0; x<size; x++)
+    {
+      QLineEdit *le = qobject_cast<QLineEdit *>(grid->itemAtPosition(y, x)->widget());
+      Q_ASSERT(le != NULL);
+      if (le->hasAcceptableInput())
+        m.set(x, y, l.toDouble(le->text()));
+      else
+        m.set(x, y, 0);
+    }
+  convolve(image, m);
 }

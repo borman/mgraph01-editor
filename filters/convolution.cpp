@@ -109,7 +109,7 @@ static QRgb doMedian(const QImage &img, int size, int x, int y)
 void median(QImage &img, int size)
 {
   int hsize = (size-1)/2;
-  QImage tmp = grow(img, size);
+  QImage tmp = grow(img, hsize);
 
   for (int y=0; y<img.height(); y++)
     for (int x=0; x<img.width(); x++)
