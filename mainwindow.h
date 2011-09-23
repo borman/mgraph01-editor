@@ -8,6 +8,7 @@ class MainWindow;
 }
 class QFileDialog;
 class QGraphicsPixmapItem;
+class FilterWrapper;
 
 class MainWindow : public QMainWindow
 {
@@ -23,6 +24,8 @@ public slots:
   bool loadFile(const QString &filename);
   void saveFile();
   void updateView();
+  void filterActivated();
+  void filterApply();
 
 signals:
   void fileOperationsEnabled(bool);
@@ -40,6 +43,8 @@ private:
 
   QGraphicsPixmapItem *imageView;
   QImage currentImage;
+
+  QList<FilterWrapper *> filters;
 };
 
 #endif // MAINWINDOW_H

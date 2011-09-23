@@ -5,14 +5,14 @@
 QPixmap histogram(const QImage &img, ColorProp prop, int w, int h,
                   const QBrush &bg, const QPen &fg)
 {
-  int *stats = new int[w];
+  int stats[w];
   for (int i=0; i<w; i++)
     stats[i] = 0;
 
   for (int y=0; y<img.height(); y++)
     for (int x=0; x<img.width(); x++)
     {
-      int pos = prop(img.pixel(x, y)) * (w-1);
+      int pos = round(prop(img.pixel(x, y)) * (w-1));
       stats[pos] += 1;
     }
 
@@ -37,7 +37,6 @@ QPixmap histogram(const QImage &img, ColorProp prop, int w, int h,
 
   p.end();
 
-  delete[] stats;
   return res;
 }
 

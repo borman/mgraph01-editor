@@ -6,13 +6,19 @@
 #include <QImage>
 #include "ifilter.h"
 
+class QSpinBox;
+class QDoubleSpinBox;
+class QGridLayout;
+class QSlider;
+class QLabel;
+
 // Get filter instances
 QList<IFilter *> createFilters(QObject *parent);
 
 
 // Simple filters
 
-class WhiteBalance: public QObject, public ISimpleFilter
+class WhiteBalance: public QObject, public IFilter
 {
     Q_OBJECT
   public:
@@ -22,7 +28,7 @@ class WhiteBalance: public QObject, public ISimpleFilter
     virtual void apply(QImage &image);
 };
 
-class LumaStretch: public QObject, public ISimpleFilter
+class LumaStretch: public QObject, public IFilter
 {
     Q_OBJECT
   public:
@@ -32,7 +38,7 @@ class LumaStretch: public QObject, public ISimpleFilter
     virtual void apply(QImage &image);
 };
 
-class RGBStretch: public QObject, public ISimpleFilter
+class RGBStretch: public QObject, public IFilter
 {
     Q_OBJECT
   public:
@@ -48,72 +54,90 @@ class GaussianBlur: public QObject, public IFilter
 {
     Q_OBJECT
   public:
-    GaussianBlur(QObject *parent) : QObject(parent) {}
+    GaussianBlur(QObject *parent);
     // reimplemented
-    virtual bool hasSettings() { return true; }
     virtual QString filterName() { return tr("Gaussian Blur"); }
-    virtual QWidget *settingsWidget(QWidget *parent);
     virtual void apply(QImage &image);
+  private:
+    QDoubleSpinBox *sbRadius;
 };
 
 class UnsharpMask: public QObject, public IFilter
 {
     Q_OBJECT
   public:
-    UnsharpMask(QObject *parent) : QObject(parent) {}
+    UnsharpMask(QObject *parent);
     // reimplemented
-    virtual bool hasSettings() { return true; }
     virtual QString filterName() { return tr("Unsharp Mask"); }
-    virtual QWidget *settingsWidget(QWidget *parent);
     virtual void apply(QImage &image);
+  private:
+    QDoubleSpinBox *sbRadius;
+    QDoubleSpinBox *sbStrength;
 };
 
 class Median: public QObject, public IFilter
 {
     Q_OBJECT
   public:
-    Median(QObject *parent) : QObject(parent) {}
+    Median(QObject *parent);
     // reimplemented
-    virtual bool hasSettings() { return true; }
     virtual QString filterName() { return tr("Median"); }
-    virtual QWidget *settingsWidget(QWidget *parent);
     virtual void apply(QImage &image);
+  private:
+    QSpinBox *sbSize;
 };
 
 class MatteGlass: public QObject, public IFilter
 {
     Q_OBJECT
   public:
-    MatteGlass(QObject *parent) : QObject(parent) {}
+    MatteGlass(QObject *parent);
     // reimplemented
-    virtual bool hasSettings() { return true; }
     virtual QString filterName() { return tr("Matte Glass"); }
-    virtual QWidget *settingsWidget(QWidget *parent);
     virtual void apply(QImage &image);
+  private:
+    QDoubleSpinBox *sbRadius;
+    QSpinBox *sbSamples;
 };
 
 class Rotate: public QObject, public IFilter
 {
     Q_OBJECT
   public:
-    Rotate(QObject *parent) : QObject(parent) {}
+    Rotate(QObject *parent);
     // reimplemented
-    virtual bool hasSettings() { return true; }
     virtual QString filterName() { return tr("Rotate"); }
-    virtual QWidget *settingsWidget(QWidget *parent);
     virtual void apply(QImage &image);
+  private:
+    QSpinBox *sbAngle;
 };
 
 class Scale: public QObject, public IFilter
 {
     Q_OBJECT
   public:
-    Scale(QObject *parent) : QObject(parent) {}
+    Scale(QObject *parent);
     // reimplemented
-    virtual bool hasSettings() { return true; }
     virtual QString filterName() { return tr("Scale"); }
-    virtual QWidget *settingsWidget(QWidget *parent);
     virtual void apply(QImage &image);
+  private:
+    QDoubleSpinBox *sbFactor;
+};
+
+class CustomConvolution: public QObject, public IFilter
+{
+    Q_OBJECT
+  public:
+    CustomConvolution(QObject *parent);
+    // reimplemented
+    virtual QString filterName() { return tr("Convolution"); }
+    virtual void apply(QImage &image);
+  private slots:
+    void updateMatrixSize(int newSize);
+  private:
+    QGridLayout *grid;
+    QSlider *slSize;
+    QLabel *lblMatrixSize;
 };
 
 #endif // FILTERS_H

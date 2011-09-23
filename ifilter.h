@@ -8,17 +8,16 @@ class QWidget;
 class IFilter
 {
   public:
-    virtual bool hasSettings() = 0;
-    virtual QWidget *settingsWidget(QWidget *parent = 0) = 0;
+    IFilter(QWidget *_sw = 0) : m_settingsWidget(_sw) {}
+
+    bool hasSettings() { return m_settingsWidget != 0; }
+    QWidget *settingsWidget() const { return m_settingsWidget; }
+
     virtual QString filterName() = 0;
     virtual void apply(QImage &image) = 0;
-};
 
-class ISimpleFilter: public IFilter
-{
-  public:
-    virtual bool hasSettings() { return false; }
-    virtual QWidget *settingsWidget(QWidget *) { return 0; }
+  private:
+    QWidget *m_settingsWidget;
 };
 
 #endif // IFILTER_H

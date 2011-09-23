@@ -1,10 +1,5 @@
-#include <cmath>
 #include "transform.h"
 #include "rgbv.h"
-
-#ifndef M_PI
-#define M_PI 3.141592653589793238462643
-#endif
 
 static QRgb getPixelEx(const QImage &img, int x, int y)
 {
@@ -18,7 +13,7 @@ static QRgb interpolate(const QImage &img, double x, double y, Interpolation met
   switch (method)
   {
   case NearestNeighbor:
-    return getPixelEx(img, x, y);
+    return getPixelEx(img, round(x), round(y));
   
   case Bilinear:
     {

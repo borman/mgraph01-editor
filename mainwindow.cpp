@@ -1,6 +1,7 @@
 #include <QFileDialog>
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
+#include <QSignalMapper>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -47,11 +48,14 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(this, SIGNAL(imageUpdated()), SLOT(updateView()));
 
   // Filters
-  QList<IFilter *> filters = createFilters(this);
-  foreach(IFilter *filter, filters)
+  QList<IFilter *> ifilters = createFilters(this);
+  foreach(IFilter *ifilter, ifilters)
   {
-    FilterWrapper *wrapper = new FilterWrapper(filter, this);
-    ui->filtersLayout->addWidget(wrapper->createWidget(ui->filtersBox));
+    FilterWrapper *wrapper = new FilterWrapper(ifilter, ui->filtersBox);
+    ui->filtersLayout->addWidget(wrapper);
+    filters << wrapper;
+    connect(wrapper, SIGNAL(activated()), SLOT(filterActivated()));
+    connect(wrapper, SIGNAL(apply()), SLOT(filterApply()));
   }
 }
 
@@ -112,4 +116,28 @@ void MainWindow::updateView()
       setPixmap(histogram(currentImage, getBlue,
                           histWidth, histHeight,
                           Qt::black, QColor(Qt::blue)));
+}
+
+void MainWindow::filterActivated()
+{
+  FilterWrapper *thisFilter = qobject_cast<FilterWrapper *>(sender());
+  if (!thisFilter)
+    return;
+
+  foreach(FilterWrapper *filter, filters)
+  {
+    if (filter != thisFilter)
+      filter->collapse();
+  }
+}
+
+void MainWindow::filterApply()
+{
+  FilterWrapper *thisFilter = qobject_cast<FilterWrapper *>(sender());
+  if (!thisFilter)
+    return;
+
+  thisFilter->filter()->apply(currentImage);
+  emit imageUpdated();
+  ui->statusBar->showMessage(tr("%1 applied.").arg(thisFilter->filter()->filterName()));
 }
