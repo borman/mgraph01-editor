@@ -11,6 +11,7 @@ class QDoubleSpinBox;
 class QGridLayout;
 class QSlider;
 class QLabel;
+class QComboBox;
 
 // Get filter instances
 QList<IFilter *> createFilters(QObject *parent);
@@ -58,8 +59,12 @@ class GaussianBlur: public QObject, public IFilter
     // reimplemented
     virtual QString filterName() { return tr("Gaussian Blur"); }
     virtual void apply(QImage &image);
+  private slots:
+    void filterChanged();
   private:
     QDoubleSpinBox *sbRadius;
+    QLabel *lblSize;
+    QLabel *lblVisual;
 };
 
 class UnsharpMask: public QObject, public IFilter
@@ -70,9 +75,13 @@ class UnsharpMask: public QObject, public IFilter
     // reimplemented
     virtual QString filterName() { return tr("Unsharp Mask"); }
     virtual void apply(QImage &image);
+  private slots:
+    void filterChanged();
   private:
     QDoubleSpinBox *sbRadius;
     QDoubleSpinBox *sbStrength;
+    QLabel *lblSize;
+    QLabel *lblVisual;
 };
 
 class Median: public QObject, public IFilter
@@ -133,10 +142,10 @@ class CustomConvolution: public QObject, public IFilter
     virtual QString filterName() { return tr("Convolution"); }
     virtual void apply(QImage &image);
   private slots:
-    void updateMatrixSize(int newSize);
+    void updateMatrixSize();
   private:
     QGridLayout *grid;
-    QSlider *slSize;
+    QComboBox *cbSize;
     QLabel *lblMatrixSize;
 };
 

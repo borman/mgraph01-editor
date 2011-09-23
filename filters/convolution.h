@@ -32,8 +32,10 @@ class Matrix
     V *m_d;
 };
 
-Matrix<double> unsharp(int size, double sigma, double alpha);
-Matrix<double> gaussian(int size, double sigma);
+// Filter generators. Matrix size is 2*halfsize+1
+Matrix<double> unsharp(int halfsize, double sigma, double alpha);
+Matrix<double> gaussian(int halfsize, double sigma);
+
 void convolve(QImage &img, const Matrix<double> &m);
 
 void median(QImage &img, int size);

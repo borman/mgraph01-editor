@@ -6,6 +6,9 @@
 #include <QLineEdit>
 #include <QHeaderView>
 #include <QLocale>
+#include <QPainter>
+#include <QRect>
+#include <QComboBox>
 
 #include "filters.h"
 #include "filters/colorcorrect.h"
@@ -26,6 +29,46 @@ QList<IFilter *> createFilters(QObject *parent)
       << new Median(parent)
       << new MatteGlass(parent)
       << new CustomConvolution(parent);
+}
+
+static int sizeForSigma(double sigma)
+{
+  return qMax(1, int(2*sigma)-1);
+}
+
+static int actualFilterSize(int size)
+{
+  return 2*size+1;
+}
+
+static QPixmap visualFilter(const Matrix<double> &m)
+{
+  static const int cell = 3;
+
+  QPixmap viz(m.size()*cell, m.size()*cell);
+  QPainter p;
+  p.begin(&viz);
+
+  double maxVal = 0.0001, minVal = -0.0001;
+  for (int y=0; y<m.size(); y++)
+    for (int x=0; x<m.size(); x++)
+    {
+      maxVal = qMax(m.at(x, y), maxVal);
+      minVal = qMin(m.at(x, y), minVal);
+    }
+
+  for (int y=0; y<m.size(); y++)
+    for (int x=0; x<m.size(); x++)
+    {
+      QRect cellRect(x*cell, y*cell, cell, cell);
+      double val = m.at(x, y)>0? m.at(x, y)/maxVal : m.at(x, y)/minVal;
+      QColor col = m.at(x, y)>0? QColor(val*50, val*100, val*255)
+                               : QColor(val*255, val*100, val*50);
+      p.fillRect(cellRect, col);
+    }
+  p.end();
+
+  return viz;
 }
 
 // =======
@@ -54,18 +97,35 @@ GaussianBlur::GaussianBlur(QObject *parent)
   settingsWidget()->setLayout(layout);
 
   sbRadius = new QDoubleSpinBox(settingsWidget());
-  sbRadius->setRange(0.01, 10);
+  sbRadius->setRange(0.1, 10);
+  sbRadius->setSingleStep(0.1);
   sbRadius->setValue(1);
+
+  lblSize = new QLabel(settingsWidget());
+  lblVisual = new QLabel(settingsWidget());
+
   layout->addRow(tr("Radius:"), sbRadius);
+  layout->addRow(tr("Filter size:"), lblSize);
+  layout->addRow(tr("Preview:"), lblVisual);
+
+  connect(sbRadius, SIGNAL(valueChanged(double)), SLOT(filterChanged()));
+  filterChanged();
 }
 
 void GaussianBlur::apply(QImage &image)
 {
   double sigma = sbRadius->value();
-  int size = 2*int(sigma*3) - 1;
-  convolve(image, gaussian(size, sigma));
+  convolve(image, gaussian(sizeForSigma(sigma), sigma));
 }
 
+void GaussianBlur::filterChanged()
+{
+  double sigma = sbRadius->value();
+  int hsize = sizeForSigma(sigma);
+  int size = actualFilterSize(hsize);
+  lblSize->setText(tr("%1x%1").arg(size));
+  lblVisual->setPixmap(visualFilter(gaussian(hsize, sigma)));
+}
 
 UnsharpMask::UnsharpMask(QObject *parent)
   : QObject(parent), IFilter(new QWidget())
@@ -74,21 +134,42 @@ UnsharpMask::UnsharpMask(QObject *parent)
   settingsWidget()->setLayout(layout);
 
   sbRadius = new QDoubleSpinBox(settingsWidget());
-  sbRadius->setRange(0.01, 10);
+  sbRadius->setRange(0.1, 10);
+  sbRadius->setSingleStep(0.1);
   sbRadius->setValue(1);
-  layout->addRow(tr("Radius:"), sbRadius);
 
   sbStrength = new QDoubleSpinBox(settingsWidget());
   sbStrength->setRange(0.01, 10);
+  sbStrength->setSingleStep(0.1);
   sbStrength->setValue(0.5);
+
+  lblSize = new QLabel(settingsWidget());
+  lblVisual = new QLabel(settingsWidget());
+
+  layout->addRow(tr("Radius:"), sbRadius);
   layout->addRow(tr("Strength:"), sbStrength);
+  layout->addRow(tr("Filter size:"), lblSize);
+  layout->addRow(tr("Preview:"), lblVisual);
+
+  connect(sbRadius, SIGNAL(valueChanged(double)), SLOT(filterChanged()));
+  connect(sbStrength, SIGNAL(valueChanged(double)), SLOT(filterChanged()));
+  filterChanged();
 }
 
 void UnsharpMask::apply(QImage &image)
 {
   double sigma = sbRadius->value();
-  int size = 2*int(sigma*3) - 1;
-  convolve(image, unsharp(size, sigma, sbStrength->value()));
+  convolve(image, unsharp(sizeForSigma(sigma), sigma, sbStrength->value()));
+}
+
+void UnsharpMask::filterChanged()
+{
+  double sigma = sbRadius->value();
+  int hsize = sizeForSigma(sigma);
+  int size = actualFilterSize(hsize);
+  double alpha = sbStrength->value();
+  lblSize->setText(tr("%1x%1").arg(size));
+  lblVisual->setPixmap(visualFilter(unsharp(hsize, sigma, alpha)));
 }
 
 Median::Median(QObject *parent)
@@ -167,24 +248,18 @@ void Scale::apply(QImage &image)
 CustomConvolution::CustomConvolution(QObject *parent)
   : QObject(parent), IFilter(new QWidget())
 {
-  const int maxSize = 7;
-  const int minSize = 3;
-  const int defaultSize = 3;
+  static const int maxSize = 7;
 
   QLocale l = QLocale::system();
 
   QFormLayout *layout = new QFormLayout;
-  layout->setRowWrapPolicy(QFormLayout::WrapAllRows);
   settingsWidget()->setLayout(layout);
 
-  slSize = new QSlider(Qt::Horizontal, settingsWidget());
-  slSize->setRange(minSize, maxSize);
-  slSize->setValue(defaultSize);
-  slSize->setTickPosition(QSlider::TicksBelow);
-  slSize->setTickInterval(1);
-  lblMatrixSize = new QLabel(settingsWidget());
-  layout->addRow(lblMatrixSize, slSize);
-  connect(slSize, SIGNAL(valueChanged(int)), SLOT(updateMatrixSize(int)));
+  cbSize = new QComboBox(settingsWidget());
+  cbSize->addItem(tr("3x3"), 3);
+  cbSize->addItem(tr("5x5"), 5);
+  cbSize->addItem(tr("7x7"), 7);
+  cbSize->setCurrentIndex(0);
 
   grid = new QGridLayout;
   grid->setSpacing(0);
@@ -195,21 +270,26 @@ CustomConvolution::CustomConvolution(QObject *parent)
       le->setValidator(new QDoubleValidator(le));
       grid->addWidget(le, y, x);
     }
+
+  layout->addRow(tr("Matrix size:"), cbSize);
   layout->addRow(grid);
 
-  updateMatrixSize(defaultSize);
+  connect(cbSize, SIGNAL(currentIndexChanged(int)), SLOT(updateMatrixSize()));
+
+  updateMatrixSize();
 }
 
-void CustomConvolution::updateMatrixSize(int newSize)
+void CustomConvolution::updateMatrixSize()
 {
-  lblMatrixSize->setText(tr("Matrix size: %1x%2").arg(newSize).arg(newSize));
+  int size = cbSize->itemData(cbSize->currentIndex()).toInt();
   for (int y=0; y<grid->rowCount(); y++)
     for (int x=0; x<grid->columnCount(); x++)
     {
       QWidget *w = grid->itemAtPosition(y, x)->widget();
       if (!w)
         continue;
-      if (y<newSize && x<newSize)
+
+      if (y<size && x<size)
         w->show();
       else
         w->hide();
@@ -218,7 +298,8 @@ void CustomConvolution::updateMatrixSize(int newSize)
 
 void CustomConvolution::apply(QImage &image)
 {
-  int size = slSize->value();
+  int size = cbSize->itemData(cbSize->currentIndex()).toInt();
+
   QLocale l = QLocale::system();
   Matrix<double> m(size);
   for (int y=0; y<size; y++)

@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>870</width>
+    <height>536</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Image Editor</string>
   </property>
@@ -246,9 +254,6 @@
          </disabled>
         </palette>
        </property>
-       <property name="autoFillBackground">
-        <bool>true</bool>
-       </property>
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
        </property>
@@ -379,9 +384,6 @@
          </disabled>
         </palette>
        </property>
-       <property name="autoFillBackground">
-        <bool>true</bool>
-       </property>
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
        </property>
@@ -496,9 +498,6 @@
          </disabled>
         </palette>
        </property>
-       <property name="autoFillBackground">
-        <bool>true</bool>
-       </property>
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
        </property>
@@ -612,9 +611,6 @@
           </colorrole>
          </disabled>
         </palette>
-       </property>
-       <property name="autoFillBackground">
-        <bool>true</bool>
        </property>
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
