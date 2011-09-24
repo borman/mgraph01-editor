@@ -19,6 +19,8 @@ FilterWrapper::FilterWrapper(IFilter *filter, QWidget *parent) :
 
     m_button = new QToolButton(this);
     m_button->setText(m_filter->filterName());
+    m_button->setArrowType(Qt::DownArrow);
+    m_button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     m_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_button->setCheckable(true);
     cbLayout->addWidget(m_button);
@@ -26,6 +28,9 @@ FilterWrapper::FilterWrapper(IFilter *filter, QWidget *parent) :
 
     m_applyButton = new QToolButton(this);
     m_applyButton->setText(tr("Apply"));
+    QFont fnt = m_applyButton->font();
+    fnt.setBold(true);
+    m_applyButton->setFont(fnt);
     m_applyButton->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
     cbLayout->addWidget(m_applyButton);
     connect(m_applyButton, SIGNAL(clicked()), SIGNAL(apply()));
@@ -49,12 +54,14 @@ void FilterWrapper::buttonToggled(bool isPressed)
     emit activated();
     if (m_filter->hasSettings())
       m_filter->settingsWidget()->show();
+    m_button->setArrowType(Qt::RightArrow);
     m_applyButton->show();
   }
   else
   {
     if (m_filter->hasSettings())
       m_filter->settingsWidget()->hide();
+    m_button->setArrowType(Qt::DownArrow);
     m_applyButton->hide();
   }
 }
