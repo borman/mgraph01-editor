@@ -19,12 +19,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
   // Setup toolbar
   ui->toolBar->addAction(tr("Open..."), this, SLOT(showOpenDialog()));
-  ui->toolBar->addAction(tr("Save"), this, SLOT(saveFile()));
   ui->toolBar->addAction(tr("Save as..."), this, SLOT(showSaveDialog()));
+  //ui->toolBar->addAction(tr("Save"), this, SLOT(saveFile())); // Dangerous it is.
 
   actOpen = ui->toolBar->actions()[0];
-  actSave = ui->toolBar->actions()[1];
-  actSaveAs = ui->toolBar->actions()[2];
+  actSaveAs = ui->toolBar->actions()[1];
+  //actSave = ui->toolBar->actions()[2];
 
   // Prepare dialogs
   dlgOpen = new QFileDialog(this, tr("Select image..."), QString());
@@ -34,9 +34,10 @@ MainWindow::MainWindow(QWidget *parent) :
   dlgSave = new QFileDialog(this, tr("Select file..."), QString());
   dlgSave->setNameFilters(QStringList() << tr("Images (*.bmp *.png *.jpg)"));
   dlgSave->setFileMode(QFileDialog::AnyFile);
+  dlgSave->setAcceptMode(QFileDialog::AcceptSave);
 
   // No file opened -> disable unavailable actions
-  connect(this, SIGNAL(fileOperationsEnabled(bool)), actSave, SLOT(setEnabled(bool)));
+  //connect(this, SIGNAL(fileOperationsEnabled(bool)), actSave, SLOT(setEnabled(bool)));
   connect(this, SIGNAL(fileOperationsEnabled(bool)), actSaveAs, SLOT(setEnabled(bool)));
   connect(this, SIGNAL(fileOperationsEnabled(bool)), ui->dockTools, SLOT(setEnabled(bool)));
   connect(this, SIGNAL(fileOperationsEnabled(bool)), ui->dockInfo, SLOT(setEnabled(bool)));
@@ -89,25 +90,42 @@ void MainWindow::showOpenDialog()
 void MainWindow::showSaveDialog()
 {
   if (dlgSave->exec() == QDialog::Accepted)
-    currentImage.save(dlgSave->selectedFiles()[0]);
+    saveFile(dlgSave->selectedFiles()[0]);
 }
 
 bool MainWindow::loadFile(const QString &filename)
 {
   if (currentImage.load(filename))
   {
+    currentFileName = filename;
     if (currentImage.format() != QImage::Format_ARGB32)
       currentImage = currentImage.convertToFormat(QImage::Format_ARGB32);
     region->resetSelection();
     emit imageUpdated();
+    ui->statusBar->showMessage(tr("Image %1 loaded successfully.").arg(filename));
     return true;
   }
-  return false;
+  else
+  {
+    ui->statusBar->showMessage(tr("Loading %1 failed.").arg(filename));
+    return false;
+  }
 }
 
 void MainWindow::saveFile()
 {
-  currentImage.save(currentFileName);
+  saveFile(currentFileName);
+}
+
+void MainWindow::saveFile(const QString &filename)
+{
+  if (currentImage.save(filename))
+  {
+    ui->statusBar->showMessage(tr("Image successfully saved to %1.").arg(filename));
+    currentFileName = filename;
+  }
+  else
+    ui->statusBar->showMessage(tr("Saving to %1 failed.").arg(filename));
 }
 
 void MainWindow::updateView()

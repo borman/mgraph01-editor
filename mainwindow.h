@@ -23,6 +23,7 @@ public slots:
   void showOpenDialog();
   void showSaveDialog();
   bool loadFile(const QString &filename);
+  void saveFile(const QString &filename);
   void saveFile();
   void updateView();
   void filterActivated();
@@ -36,8 +37,8 @@ private:
   Ui::MainWindow *ui;
 
   QAction *actOpen;
-  QAction *actSave;
   QAction *actSaveAs;
+  //QAction *actSave;
 
   QFileDialog *dlgOpen;
   QFileDialog *dlgSave;

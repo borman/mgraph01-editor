@@ -180,15 +180,19 @@ Median::Median(QObject *parent)
   QFormLayout *layout = new QFormLayout;
   settingsWidget()->setLayout(layout);
 
-  sbSize = new QSpinBox(settingsWidget());
-  sbSize->setRange(3, 7);
-  sbSize->setValue(3);
-  layout->addRow(tr("Filter size:"), sbSize);
+  cbSize = new QComboBox(settingsWidget());
+  cbSize->addItem(tr("3x3"), 3);
+  cbSize->addItem(tr("5x5"), 5);
+  cbSize->addItem(tr("7x7"), 7);
+  cbSize->setCurrentIndex(0);
+
+  layout->addRow(tr("Filter size:"), cbSize);
 }
 
 void Median::apply(QImage &image, const QRect &rect)
 {
-  median(image, rect, sbSize->value());
+  int size = cbSize->itemData(cbSize->currentIndex()).toInt();
+  median(image, rect, size);
 }
 
 MatteGlass::MatteGlass(QObject *parent)

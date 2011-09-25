@@ -93,7 +93,7 @@ class Median: public QObject, public IFilter
     virtual QString filterName() { return tr("Median"); }
     virtual void apply(QImage &image, const QRect &rect);
   private:
-    QSpinBox *sbSize;
+    QComboBox *cbSize;
 };
 
 class MatteGlass: public QObject, public IFilter
