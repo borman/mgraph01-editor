@@ -5,6 +5,7 @@
 #include <QTime>
 
 #include "mainwindow.h"
+#include "regioneditor.h"
 #include "ui_mainwindow.h"
 #include "filters.h"
 #include "filterwrapper.h"
@@ -42,15 +43,17 @@ MainWindow::MainWindow(QWidget *parent) :
   emit fileOperationsEnabled(false);
 
   // Setup graphics view
-  ui->graphicsView->setScene(new QGraphicsScene(this));
-  ui->graphicsView->setRenderHint(QPainter::Antialiasing, true);
+  ui->graphicsView->setScene(new QGraphicsScene(ui->graphicsView));
+
   imageView = new QGraphicsPixmapItem();
   ui->graphicsView->scene()->addItem(imageView);
-  ui->graphicsView->scene()->setBackgroundBrush(Qt::black);
+
+  region = new RegionEditor(imageView->boundingRect());
+  ui->graphicsView->scene()->addItem(region);
+  connect(ui->btnResetMask, SIGNAL(clicked()), region, SLOT(resetSelection()));
+  connect(ui->chkShowMask, SIGNAL(toggled(bool)), region, SLOT(setShowMask(bool)));
+
   connect(this, SIGNAL(imageUpdated()), SLOT(updateView()));
-
-  ui->graphicsView->scene()->addItem(imageView);
-
 
   // Filters
   QList<IFilter *> ifilters = createFilters(this);
@@ -88,6 +91,7 @@ bool MainWindow::loadFile(const QString &filename)
 {
   if (currentImage.load(filename))
   {
+    region->resetSelection();
     emit imageUpdated();
     return true;
   }
@@ -105,6 +109,8 @@ void MainWindow::updateView()
   static const int histHeight = 64;
 
   imageView->setPixmap(QPixmap::fromImage(currentImage));
+  region->setArea(imageView->boundingRect());
+
   ui->graphicsView->scene()->setSceneRect(imageView->boundingRect()); // Force shrink
 
   ui->hstLuminance->

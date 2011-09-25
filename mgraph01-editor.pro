@@ -18,7 +18,8 @@ SOURCES += main.cpp\
     filters/artistic.cpp \
     filters.cpp \
     filterwrapper.cpp \
-    filters/histogram.cpp
+    filters/histogram.cpp \
+    regioneditor.cpp
 
 HEADERS  += mainwindow.h \
     filters/transform.h \
@@ -29,9 +30,12 @@ HEADERS  += mainwindow.h \
     ifilter.h \
     filters.h \
     filterwrapper.h \
-    filters/histogram.h
+    filters/histogram.h \
+    regioneditor.h
 
 FORMS    += mainwindow.ui
+
+
 
 
 

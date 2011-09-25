@@ -9,6 +9,7 @@ class MainWindow;
 class QFileDialog;
 class QGraphicsPixmapItem;
 class FilterWrapper;
+class RegionEditor;
 
 class MainWindow : public QMainWindow
 {
@@ -42,6 +43,7 @@ private:
   QFileDialog *dlgSave;
 
   QGraphicsPixmapItem *imageView;
+  RegionEditor *region;
 
   QImage currentImage;
   QString currentFileName;
