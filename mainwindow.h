@@ -42,7 +42,9 @@ private:
   QFileDialog *dlgSave;
 
   QGraphicsPixmapItem *imageView;
+
   QImage currentImage;
+  QString currentFileName;
 
   QList<FilterWrapper *> filters;
 };

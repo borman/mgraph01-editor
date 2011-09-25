@@ -43,10 +43,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
   // Setup graphics view
   ui->graphicsView->setScene(new QGraphicsScene(this));
+  ui->graphicsView->setRenderHint(QPainter::Antialiasing, true);
   imageView = new QGraphicsPixmapItem();
   ui->graphicsView->scene()->addItem(imageView);
   ui->graphicsView->scene()->setBackgroundBrush(Qt::black);
   connect(this, SIGNAL(imageUpdated()), SLOT(updateView()));
+
+  ui->graphicsView->scene()->addItem(imageView);
+
 
   // Filters
   QList<IFilter *> ifilters = createFilters(this);
@@ -76,7 +80,8 @@ void MainWindow::showOpenDialog()
 
 void MainWindow::showSaveDialog()
 {
-  dlgSave->exec();
+  if (dlgSave->exec() == QDialog::Accepted)
+    currentImage.save(dlgSave->selectedFiles()[0]);
 }
 
 bool MainWindow::loadFile(const QString &filename)
@@ -91,6 +96,7 @@ bool MainWindow::loadFile(const QString &filename)
 
 void MainWindow::saveFile()
 {
+  currentImage.save(currentFileName);
 }
 
 void MainWindow::updateView()
@@ -121,6 +127,8 @@ void MainWindow::updateView()
 
 void MainWindow::filterActivated()
 {
+  // Exclusive filter selection. Do we need it?
+#if 0
   FilterWrapper *thisFilter = qobject_cast<FilterWrapper *>(sender());
   if (!thisFilter)
     return;
@@ -130,6 +138,7 @@ void MainWindow::filterActivated()
     if (filter != thisFilter)
       filter->collapse();
   }
+#endif
 }
 
 void MainWindow::filterApply()
