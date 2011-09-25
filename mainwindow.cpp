@@ -59,11 +59,16 @@ MainWindow::MainWindow(QWidget *parent) :
   QList<IFilter *> ifilters = createFilters(this);
   foreach(IFilter *ifilter, ifilters)
   {
-    FilterWrapper *wrapper = new FilterWrapper(ifilter, ui->filtersBox);
-    ui->filtersLayout->addWidget(wrapper);
-    filters << wrapper;
-    connect(wrapper, SIGNAL(activated()), SLOT(filterActivated()));
-    connect(wrapper, SIGNAL(apply()), SLOT(filterApply()));
+    if (ifilter)
+    {
+      FilterWrapper *wrapper = new FilterWrapper(ifilter, ui->filtersBox);
+      ui->filtersLayout->addWidget(wrapper);
+      filters << wrapper;
+      connect(wrapper, SIGNAL(activated()), SLOT(filterActivated()));
+      connect(wrapper, SIGNAL(apply()), SLOT(filterApply()));
+    }
+    else
+      ui->filtersLayout->addSpacing(20);
   }
 }
 

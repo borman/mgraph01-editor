@@ -22,8 +22,10 @@ QList<IFilter *> createFilters(QObject *parent)
       << new WhiteBalance(parent)
       << new LumaStretch(parent)
       << new RGBStretch(parent)
+      << 0
       << new Rotate(parent)
       << new Scale(parent)
+      << 0
       << new GaussianBlur(parent)
       << new UnsharpMask(parent)
       << new Median(parent)
