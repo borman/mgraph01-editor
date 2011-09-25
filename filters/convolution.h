@@ -36,8 +36,8 @@ class Matrix
 Matrix<double> unsharp(int halfsize, double sigma, double alpha);
 Matrix<double> gaussian(int halfsize, double sigma);
 
-void convolve(QImage &img, const Matrix<double> &m);
+void convolve(QImage &img, const QRect &rect, const Matrix<double> &m);
 
-void median(QImage &img, int size);
+void median(QImage &img, const QRect &rect, int size);
 
 #endif // CONVOLUTION_H

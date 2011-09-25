@@ -2,11 +2,12 @@
 #include <QPainter>
 #include "histogram.h"
 
-QPixmap drawHistogram(const QImage &img, ColorProp prop, int w, int h,
+QPixmap drawHistogram(const QImage &img, const QRect &rect,
+                      ColorProp prop, int w, int h,
                       const QColor &bg, const QColor &fg)
 {
   int qmin, qmax;
-  QVector<double> stats = makeHistogram(img, prop, w, &qmin, &qmax);
+  QVector<double> stats = makeHistogram(img, rect, prop, w, &qmin, &qmax);
 
   double smax = stats[0];
   for (int i=1; i<w; i++)
@@ -33,19 +34,21 @@ QPixmap drawHistogram(const QImage &img, ColorProp prop, int w, int h,
   return res;
 }
 
-QVector<double> makeHistogram(const QImage &img, ColorProp prop, int w, int *qmin, int *qmax)
+QVector<double> makeHistogram(const QImage &img, const QRect &rect,
+                              ColorProp prop, int w,
+                              int *qmin, int *qmax)
 {
   static const double quantile = 0.01;
 
   QVector<double> stats(w, 0);
-  for (int y=0; y<img.height(); y++)
-    for (int x=0; x<img.width(); x++)
+  for (int y=rect.top(); y<=rect.bottom(); y++)
+    for (int x=rect.left(); x<=rect.right(); x++)
     {
       int pos = qBound(0, int(prop(img.pixel(x, y)) * (w-1)), w-1);
       stats[pos] += 1;
     }
 
-  double k = 1.0/(img.width()*img.height());
+  double k = 1.0/(rect.width()*rect.height());
   for (int p=0; p<w; p++)
     stats[p] *= k;
 

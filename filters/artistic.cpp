@@ -13,6 +13,7 @@ static double rand_n()
   return sum;
 }
 
+// Uniform random in [-1..1]
 static double rand_u()
 {
   return (double(rand())/double(RAND_MAX) - 0.5) * 2;
@@ -28,11 +29,11 @@ static int variate(int min, int base, int max, int radius)
   return qBound(min, base+d, max);
 }
 
-void glass(QImage &img, int radius, int samples)
+void glass(QImage &img, const QRect &rect, int radius, int samples)
 {
   QImage src = img;
-  for (int y=0; y<img.height(); y++)
-    for (int x=0; x<img.width(); x++)
+  for (int y=rect.top(); y<rect.bottom(); y++)
+    for (int x=rect.left(); x<rect.right(); x++)
     {
       RGBV acc;
       double k = 1.0/samples;

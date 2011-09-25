@@ -14,7 +14,7 @@ class IFilter
     QWidget *settingsWidget() const { return m_settingsWidget; }
 
     virtual QString filterName() = 0;
-    virtual void apply(QImage &image) = 0;
+    virtual void apply(QImage &image, const QRect &rect) = 0;
 
   private:
     QWidget *m_settingsWidget;

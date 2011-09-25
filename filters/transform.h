@@ -61,8 +61,16 @@ enum Interpolation
   Bilinear
 };
 
-QImage transform(const QImage &img, const Transform &transform, Interpolation ipol = Bilinear);
-QImage scale(const QImage &img, double factor, Interpolation ipol = Bilinear);
-QImage rotate(const QImage &img, double degree, Interpolation ipol = Bilinear);
+QImage transform(const QImage &img, const QRect &rect,
+                 const Transform &transform,
+                 Interpolation ipol = Bilinear);
+
+QImage scale(const QImage &img, const QRect &rect,
+             double factor,
+             Interpolation ipol = Bilinear);
+
+QImage rotate(const QImage &img, const QRect &rect,
+              double degree,
+              Interpolation ipol = Bilinear);
 
 #endif // TRANSFORM_H

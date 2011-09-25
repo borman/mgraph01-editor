@@ -8,12 +8,15 @@
 // Pixel property accessor (R, G, B, Luma, etc) -> double [0, 1]
 typedef double (*ColorProp)(QRgb color);
 
-QPixmap drawHistogram(const QImage &img, ColorProp prop, int w, int h,
-                  const QColor &bg, const QColor &fg);
+QPixmap drawHistogram(const QImage &img, const QRect &rect,
+                      ColorProp prop, int w, int h,
+                      const QColor &bg, const QColor &fg);
 
 // Make histogram with resolution w
 // First and last percentiles optionally returned in qmin, qmax
-QVector<double> makeHistogram(const QImage &img, ColorProp prop, int w, int *qmin, int *qmax);
+QVector<double> makeHistogram(const QImage &img, const QRect &rect,
+                              ColorProp prop, int w,
+                              int *qmin, int *qmax);
 
 double getLuma(QRgb rgb);
 double getRed(QRgb rgb);

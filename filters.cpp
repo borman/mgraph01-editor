@@ -75,19 +75,19 @@ static QPixmap visualFilter(const Matrix<double> &m)
 
 // =======
 
-void WhiteBalance::apply(QImage &image)
+void WhiteBalance::apply(QImage &image, const QRect &rect)
 {
-  whitebalance(image);
+  whitebalance(image, rect);
 }
 
-void LumaStretch::apply(QImage &image)
+void LumaStretch::apply(QImage &image, const QRect &rect)
 {
-  luma_stretch(image);
+  luma_stretch(image, rect);
 }
 
-void RGBStretch::apply(QImage &image)
+void RGBStretch::apply(QImage &image, const QRect &rect)
 {
-  rgb_stretch(image);
+  rgb_stretch(image, rect);
 }
 
 // ========
@@ -114,10 +114,10 @@ GaussianBlur::GaussianBlur(QObject *parent)
   filterChanged();
 }
 
-void GaussianBlur::apply(QImage &image)
+void GaussianBlur::apply(QImage &image, const QRect &rect)
 {
   double sigma = sbRadius->value();
-  convolve(image, gaussian(sizeForSigma(sigma), sigma));
+  convolve(image, rect, gaussian(sizeForSigma(sigma), sigma));
 }
 
 void GaussianBlur::filterChanged()
@@ -158,10 +158,10 @@ UnsharpMask::UnsharpMask(QObject *parent)
   filterChanged();
 }
 
-void UnsharpMask::apply(QImage &image)
+void UnsharpMask::apply(QImage &image, const QRect &rect)
 {
   double sigma = sbRadius->value();
-  convolve(image, unsharp(sizeForSigma(sigma), sigma, sbStrength->value()));
+  convolve(image, rect, unsharp(sizeForSigma(sigma), sigma, sbStrength->value()));
 }
 
 void UnsharpMask::filterChanged()
@@ -186,9 +186,9 @@ Median::Median(QObject *parent)
   layout->addRow(tr("Filter size:"), sbSize);
 }
 
-void Median::apply(QImage &image)
+void Median::apply(QImage &image, const QRect &rect)
 {
-  median(image, sbSize->value());
+  median(image, rect, sbSize->value());
 }
 
 MatteGlass::MatteGlass(QObject *parent)
@@ -208,9 +208,9 @@ MatteGlass::MatteGlass(QObject *parent)
   layout->addRow(tr("Samples:"), sbSamples);
 }
 
-void MatteGlass::apply(QImage &image)
+void MatteGlass::apply(QImage &image, const QRect &rect)
 {
-  glass(image, sbRadius->value(), sbSamples->value());
+  glass(image, rect, sbRadius->value(), sbSamples->value());
 }
 
 Rotate::Rotate(QObject *parent)
@@ -225,9 +225,9 @@ Rotate::Rotate(QObject *parent)
   layout->addRow(tr("Angle (degrees):"), sbAngle);
 }
 
-void Rotate::apply(QImage &image)
+void Rotate::apply(QImage &image, const QRect &rect)
 {
-  image = rotate(image, sbAngle->value());
+  image = rotate(image, rect, sbAngle->value());
 }
 
 Scale::Scale(QObject *parent)
@@ -242,9 +242,9 @@ Scale::Scale(QObject *parent)
   layout->addRow(tr("Factor:"), sbFactor);
 }
 
-void Scale::apply(QImage &image)
+void Scale::apply(QImage &image, const QRect &rect)
 {
-  image = scale(image, sbFactor->value());
+  image = scale(image, rect, sbFactor->value());
 }
 
 CustomConvolution::CustomConvolution(QObject *parent)
@@ -298,7 +298,7 @@ void CustomConvolution::updateMatrixSize()
     }
 }
 
-void CustomConvolution::apply(QImage &image)
+void CustomConvolution::apply(QImage &image, const QRect &rect)
 {
   int size = cbSize->itemData(cbSize->currentIndex()).toInt();
 
@@ -314,5 +314,5 @@ void CustomConvolution::apply(QImage &image)
       else
         m.set(x, y, 0);
     }
-  convolve(image, m);
+  convolve(image, rect, m);
 }

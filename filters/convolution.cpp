@@ -28,13 +28,13 @@ static QRgb apply(const QImage &img, const Matrix<double> &m, int x, int y)
   return acc.toQRgb();
 }
 
-void convolve(QImage &img, const Matrix<double> &m)
+void convolve(QImage &img, const QRect &rect, const Matrix<double> &m)
 {
   int size = (m.size()-1)/2;
   QImage tmp = grow(img, size);
 
-  for (int y=0; y<img.height(); y++)
-    for (int x=0; x<img.width(); x++)
+  for (int y=rect.top(); y<=rect.bottom(); y++)
+    for (int x=rect.left(); x<=rect.right(); x++)
       img.setPixel(x, y, apply(tmp, m, x+size, y+size));
 }
 
@@ -107,13 +107,13 @@ static QRgb doMedian(const QImage &img, int size, int x, int y)
   return res;
 }
 
-void median(QImage &img, int size)
+void median(QImage &img, const QRect &rect, int size)
 {
   int hsize = (size-1)/2;
   QImage tmp = grow(img, hsize);
 
-  for (int y=0; y<img.height(); y++)
-    for (int x=0; x<img.width(); x++)
+  for (int y=rect.top(); y<=rect.bottom(); y++)
+    for (int x=rect.left(); x<=rect.right(); x++)
       img.setPixel(x, y, doMedian(tmp, size, x+hsize, y+hsize));
 }
 

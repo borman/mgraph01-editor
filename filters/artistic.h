@@ -3,6 +3,6 @@
 
 #include <QImage>
 
-void glass(QImage &img, int radius, int samples);
+void glass(QImage &img, const QRect &rect, int radius, int samples);
 
 #endif // ARTISTIC_H

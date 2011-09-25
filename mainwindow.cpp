@@ -96,6 +96,8 @@ bool MainWindow::loadFile(const QString &filename)
 {
   if (currentImage.load(filename))
   {
+    if (currentImage.format() != QImage::Format_ARGB32)
+      currentImage = currentImage.convertToFormat(QImage::Format_ARGB32);
     region->resetSelection();
     emit imageUpdated();
     return true;
@@ -118,20 +120,21 @@ void MainWindow::updateView()
 
   ui->graphicsView->scene()->setSceneRect(imageView->boundingRect()); // Force shrink
 
+  QRect full(QPoint(0, 0), currentImage.size());
   ui->hstLuminance->
-      setPixmap(drawHistogram(currentImage, getLuma,
+      setPixmap(drawHistogram(currentImage, full, getLuma,
                               histWidth, histHeight,
                               Qt::black, Qt::white));
   ui->hstRed->
-      setPixmap(drawHistogram(currentImage, getRed,
+      setPixmap(drawHistogram(currentImage, full, getRed,
                               histWidth, histHeight,
                               Qt::black, Qt::red));
   ui->hstGreen->
-      setPixmap(drawHistogram(currentImage, getGreen,
+      setPixmap(drawHistogram(currentImage, full, getGreen,
                               histWidth, histHeight,
                               Qt::black, Qt::green));
   ui->hstBlue->
-      setPixmap(drawHistogram(currentImage, getBlue,
+      setPixmap(drawHistogram(currentImage, full, getBlue,
                               histWidth, histHeight,
                               Qt::black, Qt::blue));
 }
@@ -164,7 +167,7 @@ void MainWindow::filterApply()
 
   QTime measure;
   measure.start();
-  ifilter->apply(currentImage);
+  ifilter->apply(currentImage, region->selection().toRect());
   int elapsed = measure.elapsed();
 
   emit imageUpdated();
